@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catatan Kuliah — Kode Latihan P11</title>
+  <style>
+    body { margin: 0; font-family: system-ui, "Segoe UI", sans-serif; background: #f5f7fa; color: #1d2430; }
+    header { background: #1f3b63; color: #fff; padding: 12px 16px; }
+    header h1 { margin: 0; font-size: 1.2rem; }
+    main { max-width: 720px; margin: 0 auto; padding: 16px; }
+    form, .cari { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    input, select, button { font: inherit; padding: 8px 10px; border-radius: 6px; border: 1px solid #c4cad3; }
+    button { cursor: pointer; }
+    form button { background: #2f7de1; color: #fff; border: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+    .kartu { background: #fff; border-radius: 8px; padding: 10px 12px; box-shadow: 0 1px 2px #0000001a; }
+    .kartu h3 { margin: 4px 0; font-size: 1rem; overflow-wrap: anywhere; }
+    .kartu small { color: #5b6470; }
+    .kartu .aksi { display: flex; gap: 6px; margin-top: 8px; }
+    .kartu .aksi button { padding: 4px 8px; font-size: .85rem; }
+    .kosong { color: #5b6470; }
+  </style>
+</head>
+<body>
+  <header><h1>Catatan Kuliah</h1></header>
+  <main>
+    <form id="form">
+      <input id="judul" placeholder="Judul catatan" aria-label="Judul catatan" required>
+      <select id="mk" aria-label="Mata kuliah">
+        <option>Pemrograman Visual</option>
+        <option>Animasi 2D</option>
+        <option>Elektronika dan Instrumentasi</option>
+      </select>
+      <button type="submit">Simpan</button>
+    </form>
+    <div class="cari"><input id="cari" type="search" placeholder="Cari catatan…" aria-label="Cari catatan"></div>
+    <p id="info"></p>
+    <h2>Disematkan</h2>
+    <div id="sematan" class="grid"></div>
+    <h2>Semua catatan</h2>
+    <div id="semua" class="grid"></div>
+  </main>
+  <script src="app.js" defer></script>
+</body>
+</html>
+```
+
+#### `sebelum/app.js`
+```javascript
+var catatan = JSON.parse(localStorage.getItem('catatan-kuliah')) || [];
+var kataCari = '';
+ 
+function render() {
+  var sematan = document.getElementById('sematan');
+  var semua = document.getElementById('semua');
+  var info = document.getElementById('info');
+  sematan.innerHTML = '';
+  semua.innerHTML = '';
+  var hasil = [];
+  for (var i = 0; i < catatan.length; i++) {
+    if (catatan[i].judul.toLowerCase().indexOf(kataCari.toLowerCase()) !== -1) {
+      hasil.push(catatan[i]);
+    }
+  }
+  var jumlahSemat = 0;
+  for (var j = 0; j < hasil.length; j++) {
+    var c = hasil[j];
+    if (c.disematkan) {
+      jumlahSemat++;
+      sematan.innerHTML +=
+        '<div class="kartu"><small>' + c.mk + '</small><h3>' + c.judul + '</h3>' +
+        '<small>' + new Date(c.dibuat).toLocaleDateString('id-ID') + '</small>' +
+        '<div class="aksi"><button onclick="sematkan(' + c.id + ')">Lepas</button>' +
+        '<button onclick="hapus(' + c.id + ')">Hapus</button></div></div>';
+    }
+    semua.innerHTML +=
+      '<div class="kartu"><small>' + c.mk + '</small><h3>' + c.judul + '</h3>' +
+      '<small>' + new Date(c.dibuat).toLocaleDateString('id-ID') + '</small>' +
+      '<div class="aksi"><button onclick="sematkan(' + c.id + ')">' + (c.disematkan ? 'Lepas' : 'Sematkan') + '</button>' +
+      '<button onclick="hapus(' + c.id + ')">Hapus</button></div></div>';
+  }
+  if (jumlahSemat === 0) sematan.innerHTML = '<p class="kosong">Belum ada catatan yang disematkan.</p>';
+  if (hasil.length === 0) semua.innerHTML = '<p class="kosong">Tidak ada catatan.</p>';
+  info.textContent = hasil.length + ' catatan, ' + jumlahSemat + ' disematkan';
+  localStorage.setItem('catatan-kuliah', JSON.stringify(catatan));
+}
+ 
+function sematkan(id) {
+  for (var i = 0; i < catatan.length; i++) {
+    if (catatan[i].id === id) catatan[i].disematkan = !catatan[i].disematkan;
+  }
+  render();
+}
+ 
+function hapus(id) {
+  if (!confirm('Hapus catatan ini?')) return;
+  var baru = [];
+  for (var i = 0; i < catatan.length; i++) {
+    if (catatan[i].id !== id) baru.push(catatan[i]);
+  }
+  catatan = baru;
+  render();
+}
+ 
+document.getElementById('form').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var judul = document.getElementById('judul').value.trim();
+  if (judul === '') return;
+  catatan.push({ id: Date.now(), judul: judul, mk: document.getElementById('mk').value,
+                 dibuat: new Date().toISOString(), disematkan: false });
+  document.getElementById('judul').value = '';
+  render();
+});
+ 
+document.getElementById('cari').addEventListener('input', function (e) {
+  kataCari = e.target.value;
+  render();
+});
+ 
+render();
+```[cite: 1]
+
+---
+
+### Langkah 3: Salin File Uji ke Folder `uji/`
+Salin file `uji-modul.html` dan `uji-modul.js` dari lampiran tugas ke dalam folder `uji/` kamu tanpa mengubah sedikitpun kodenya (karena ini file pemeriksa otomatis dari dosen)[cite: 1].
+
+---
+
+### Langkah 4: Membuat Kode Folder `sesudah/` (ES Modules)
+Sekarang kita pecah kodenya menjadi modul-modul terpisah di dalam folder `sesudah/`.
+
+#### 1. `sesudah/storage.js` (Mengurus LocalStorage)
+```javascript
+// storage.js
+const KUNCI = 'catatan-kuliah';
+
+export function ambilData() {
+  return JSON.parse(localStorage.getItem(KUNCI)) || [];
+}
+
+export function simpanData(catatan) {
+  localStorage.setItem(KUNCI, JSON.stringify(catatan));
+}
