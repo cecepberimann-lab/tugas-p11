@@ -1,10 +1,21 @@
-// storage.js
-const KUNCI = 'catatan-kuliah';
+export const KUNCI = 'catatan-kuliah:v1';
 
-export function ambilData() {
-  return JSON.parse(localStorage.getItem(KUNCI)) || [];
+export function muat() {
+  try {
+    const dataMentah = localStorage.getItem(KUNCI);
+    if (!dataMentah) return [];
+    const parsed = JSON.parse(dataMentah);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item) => item && typeof item.judul === 'string');
+  } catch (err) {
+    return [];
+  }
 }
 
-export function simpanData(catatan) {
-  localStorage.setItem(KUNCI, JSON.stringify(catatan));
+export function simpan(data) {
+  try {
+    localStorage.setItem(KUNCI, JSON.stringify(data));
+  } catch (err) {
+    console.warn('Penyimpanan penuh atau diblokir');
+  }
 }
